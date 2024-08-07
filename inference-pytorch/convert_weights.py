@@ -84,7 +84,8 @@ def convert_weights(tf_weights_dir):
     tf_dict = {remap_name(v.name): remap_tensor(v) for v in tf_model.variables}
 
     torch_model = transnetv2_pytorch.TransNetV2()
-    torch_dict = {k: tuple(v.shape) for k, v in list(torch_model.named_parameters()) + list(torch_model.named_buffers())}
+    torch_dict = {k: tuple(v.shape) for k, v in
+                  list(torch_model.named_parameters()) + list(torch_model.named_buffers())}
 
     assert check_and_fix_dicts(tf_dict, torch_dict), "some errors occurred when converting"
     torch_model.load_state_dict(tf_dict)

@@ -20,6 +20,12 @@ python convert_weights.py [--test]
 ```
 The pytorch weights are saved into *transnetv2-pytorch-weights.pth* file.
 
+### Convert Pytorch2ONNX
+`./inference-pytorch/convert_onnx.py`
+
+### RUN with ONNXRuntime
+`./inference-pytorch/run_onnx.py`
+
 ### ADVANCED USAGE
 
 ```python

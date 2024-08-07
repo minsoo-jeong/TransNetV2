@@ -29,7 +29,8 @@ class TransNetV2(nn.Module):
         )
 
         self.frame_sim_layer = FrameSimilarity(
-            sum([(F * 2 ** i) * 4 for i in range(L)]), lookup_window=101, output_dim=128, similarity_dim=128, use_bias=True
+            sum([(F * 2 ** i) * 4 for i in range(L)]), lookup_window=101, output_dim=128, similarity_dim=128,
+            use_bias=True
         ) if use_frame_similarity else None
         self.color_hist_layer = ColorHistograms(
             lookup_window=101, output_dim=128
@@ -49,7 +50,8 @@ class TransNetV2(nn.Module):
         self.eval()
 
     def forward(self, inputs):
-        assert isinstance(inputs, torch.Tensor) and list(inputs.shape[2:]) == [27, 48, 3] and inputs.dtype == torch.uint8, \
+        assert isinstance(inputs, torch.Tensor) and list(inputs.shape[2:]) == [27, 48,
+                                                                               3] and inputs.dtype == torch.uint8, \
             "incorrect input type and/or shape"
         # uint8 of shape [B, T, H, W, 3] to float of shape [B, 3, T, H, W]
         x = inputs.permute([0, 4, 1, 2, 3]).float()
@@ -81,8 +83,12 @@ class TransNetV2(nn.Module):
 
         one_hot = self.cls_layer1(x)
 
+        one_hot = functional.sigmoid(one_hot)
         if self.cls_layer2 is not None:
-            return one_hot, {"many_hot": self.cls_layer2(x)}
+            # return one_hot, {"many_hot": self.cls_layer2(x)}
+            many_hot = functional.sigmoid(self.cls_layer2(x))
+
+            return one_hot, many_hot
 
         return one_hot
 
@@ -248,7 +254,8 @@ class FrameSimilarity(nn.Module):
 
         batch_size, time_window = x.shape[0], x.shape[1]
         similarities = torch.bmm(x, x.transpose(1, 2))  # [batch_size, time_window, time_window]
-        similarities_padded = functional.pad(similarities, [(self.lookup_window - 1) // 2, (self.lookup_window - 1) // 2])
+        similarities_padded = functional.pad(similarities,
+                                             [(self.lookup_window - 1) // 2, (self.lookup_window - 1) // 2])
 
         batch_indices = torch.arange(0, batch_size, device=x.device).view([batch_size, 1, 1]).repeat(
             [1, time_window, self.lookup_window])
@@ -291,7 +298,10 @@ class ColorHistograms(nn.Module):
         binned_values = (binned_values + frame_bin_prefix).view(-1)
 
         histograms = torch.zeros(batch_size * time_window * 512, dtype=torch.int32, device=frames.device)
-        histograms.scatter_add_(0, binned_values, torch.ones(len(binned_values), dtype=torch.int32, device=frames.device))
+        # histograms.scatter_add_(0, binned_values,
+        #                         torch.ones(len(binned_values), dtype=torch.int32, device=frames.device))
+        histograms.scatter_add_(0, binned_values,
+                                torch.ones(binned_values.shape[0], dtype=torch.int32, device=frames.device))
 
         histograms = histograms.view(batch_size, time_window, 512).float()
         histograms_normalized = functional.normalize(histograms, p=2, dim=2)
@@ -302,7 +312,8 @@ class ColorHistograms(nn.Module):
 
         batch_size, time_window = x.shape[0], x.shape[1]
         similarities = torch.bmm(x, x.transpose(1, 2))  # [batch_size, time_window, time_window]
-        similarities_padded = functional.pad(similarities, [(self.lookup_window - 1) // 2, (self.lookup_window - 1) // 2])
+        similarities_padded = functional.pad(similarities,
+                                             [(self.lookup_window - 1) // 2, (self.lookup_window - 1) // 2])
 
         batch_indices = torch.arange(0, batch_size, device=x.device).view([batch_size, 1, 1]).repeat(
             [1, time_window, self.lookup_window])
