@@ -21,10 +21,10 @@ python convert_weights.py [--test]
 The pytorch weights are saved into *transnetv2-pytorch-weights.pth* file.
 
 ### Convert Pytorch2ONNX
-`./inference-pytorch/convert_onnx.py`
+`./inference-pytorch/convert_onnx.py` [pth](https://github.com/minsoo-jeong/TransNetV2/releases/download/onnx/transnetv2-pytorch-weights.pth) [onnx](https://github.com/minsoo-jeong/TransNetV2/releases/download/onnx/transnetv2.onnx)
 
-### RUN with ONNXRuntime
-`./inference-pytorch/run_onnx.py`
+
+`./inference-pytorch/run_onnx.py` 
 
 ### ADVANCED USAGE
 
